@@ -18,27 +18,27 @@ Drew Phillips <drew@drew-phillips.com>
 
 **Basic Usage**
 
-$parser = new Dapphp\RssParser\RssParser;
-$parser->parse($urlOfRssFeed)
-       ->show();    
+    $parser = new Dapphp\RssParser\RssParser;
+    $parser->parse($urlOfRssFeed)
+           ->show();    
 
 **Usage with caching & custom template**
 
-$template = <<<HTML
-  <div>
-    <img src="#{dc:image.src}" height="#{dc:image.height}" width="#{dc:image.width}" align="left"/>
-    <a href="#{link}" style="font-size: 1.2em" target="_blank">#{title}</a><br>
-    #{content:encoded}
-    Published on #{pubDate} by #{dc:creator}
-  </div>
-  <hr>
-HTML;
+    $template = <<<HTML
+        <div>
+          <img src="#{dc:image.src}" height="#{dc:image.height}" width="#{dc:image.width}" align="left"/>
+          <a href="#{link}" style="font-size: 1.2em" target="_blank">#{title}</a><br>
+          #{content:encoded}
+          Published on #{pubDate} by #{dc:creator}
+        </div>
+        <hr>
+    HTML;
 
-$parser->setCacheDir('/tmp')
-       ->setCacheLifetime(600)
-       ->setItemTemplate($template)
-       ->parse($feedUrl)
-       ->show(10); // show 10 items
+    $parser->setCacheDir('/tmp')
+           ->setCacheLifetime(600)
+           ->setItemTemplate($template)
+           ->parse($feedUrl)
+           ->show(10); // show 10 items
 
 ## Description:
 
