@@ -39,10 +39,12 @@
  * @copyright 2015 Drew Phillips
  * @author Drew Phillips <drew@drew-phillips.com>
  * @package Dapphp\RssParser
- * @version 1.0 (May 17, 2015)
+ * @version 1.0.1 (June 1, 2015)
  */
 
 namespace Dapphp\RssParser;
+
+use Dapphp\RssParser\FeedException;
 
 /**
  * Dapphp\RssParser
@@ -327,7 +329,7 @@ class RssParser
         $numItems = preg_match_all("/<item[^>]*>(.*?)<\/item>/s", $content, $items);
 
         if ($numItems < 1) {
-            throw new \Exception('No &lt;item&gt; elements found in feed content');
+            throw new FeedException('No &lt;item&gt; elements found in feed content');
         }
 
         for($i = 0; $i < $numItems; ++$i) {
@@ -358,7 +360,7 @@ class RssParser
                 case 'open_tag_lt':
                     if (trim($char) == '') continue;
                     if ($char != '<') {
-                        throw new \Exception("Error parsing &lt;item&gt; content; expected &lt;, got $char");
+                        throw new FeedException("Error parsing &lt;item&gt; content; expected &lt;, got $char");
                     }
                     $tagName      = '';
                     $tagContent   = null;
@@ -385,7 +387,7 @@ class RssParser
                     } else if ($char == '>') {
                         $state = 'close_tag_end';
                     } else {
-                        throw new \Exception("Error parsing opening tag; expected &gt;, got $char");
+                        throw new FeedException("Error parsing opening tag; expected &gt;, got $char");
                     }
                     break;
 
@@ -407,7 +409,7 @@ class RssParser
                     while ($char != '<') {
                         $tagContent .= $char;
                         if ($i + 1 > strlen($content)) {
-                            throw new \Exception("Unexpected \$end while reading {$tagName} contents");
+                            throw new FeedException("Unexpected \$end while reading {$tagName} contents");
                         }
                         $char = $content[++$i];
                     }
@@ -451,7 +453,7 @@ class RssParser
                         $attribName .= $char;
                         $state = 'tag_attribute_name';
                     } else {
-                        throw new \Exception("Unexpected character $char while parsing opening tag attribute name");
+                        throw new FeedException("Unexpected character $char while parsing opening tag attribute name");
                     }
                     break;
 
@@ -469,7 +471,7 @@ class RssParser
                         $attributes[$attribName] = null;
                         $state = 'tag_content';
                     } else {
-                        throw new \Exception("Unexpected character $char while parsing opening tag attribute name");
+                        throw new FeedException("Unexpected character $char while parsing opening tag attribute name");
                     }
                     break;
 
@@ -483,7 +485,7 @@ class RssParser
                         $attributes[$attribName] = null;
                         $state = 'tag_content';
                     } else {
-                        throw new \Exception("Expected attribute value; got $char");
+                        throw new FeedException("Expected attribute value; got $char");
                     }
                     break;
 
@@ -494,7 +496,7 @@ class RssParser
                         $quoteChar = $char;
                         $state = 'tag_attribute_value';
                     } else {
-                        throw new \Exception("Error parsing attribute value; expected quotes, got $char");
+                        throw new FeedException("Error parsing attribute value; expected quotes, got $char");
                     }
                     break;
 
@@ -510,7 +512,7 @@ class RssParser
 
                 case 'close_tag_lt':
                     if ($char != '/') {
-                        throw new \Exception("Expected '/' to close $tagName; got $char");
+                        throw new FeedException("Expected '/' to close $tagName; got $char");
                     } else {
                         $state = 'close_tag_name';
                     }
@@ -519,7 +521,7 @@ class RssParser
                 case 'close_tag_name':
                     if ($char == '>') {
                         if ($closeTagName != $tagName) {
-                            throw new \Exception("Expected closing tag for $tagName; got $closeTagName");
+                            throw new FeedException("Expected closing tag for $tagName; got $closeTagName");
                         }
 
                         $state = 'close_tag_end';
@@ -537,7 +539,7 @@ class RssParser
         }
 
         if ($state != 'open_tag_lt') {
-            throw new \Exception("Unexpected end of feed; current state: $state");
+            throw new FeedException("Unexpected end of feed; current state: $state");
         }
 
         return $tags;
