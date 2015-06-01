@@ -247,7 +247,7 @@ class RssParser
                 } else {
                     $value = $item[$tags[1][$m]]['content'];
                 }
-                $entry = str_replace('#{' . $tags[1][$m] . '}', $this->_unHtmlEntities($value), $entry);
+                $entry = str_replace('#{' . $tags[1][$m] . '}', $this->unHtmlEntities($value), $entry);
             }
             $content .= $entry;
             $c++;
@@ -580,9 +580,10 @@ class RssParser
      * @param string $string The content string to decode
      * @return string The decoded content
      */
-    private function _unHtmlEntities($string)
+    public function unHtmlEntities($string)
     {
-        $trans_tbl = get_html_translation_table(HTML_ENTITIES, ENT_COMPAT | ENT_HTML5, $this->_encoding);
+        $entHtml5  = (defined('ENT_HTML5') ? ENT_HTML5 : 48); // not defined in PHP < 5.4.0
+        $trans_tbl = get_html_translation_table(HTML_ENTITIES, ENT_COMPAT | $entHtml5, $this->_encoding);
         $trans_tbl = array_flip($trans_tbl);
         return strtr($string, $trans_tbl);
     }
