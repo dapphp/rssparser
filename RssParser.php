@@ -257,6 +257,19 @@ class RssParser
     }
 
     /**
+    * Returns the feed <item> entries.
+    * Item content accessed using $items[$n]['tagName']['content']
+    * Item attributes accessed using $items[$n]['tagName']['attributes']['attribName']
+    *
+    * @return array Array of feed items
+    */
+    public function getItems()
+    {
+        reset($this->_feedItems);
+        return $this->_feedItems;
+    }
+
+    /**
      * Download the RSS feed from the remote URL
      *
      * @param string $url The URL of the feed to download
