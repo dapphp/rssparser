@@ -555,7 +555,8 @@ class RssParser
     {
         $urlParts  = parse_url($url);
         $cacheFile = $urlParts['host'] . '-' . str_replace('/', '_', $urlParts['path']) . '-' . @$urlParts['query'] . '.dat';
-        $cacheFile = rtrim($this->_cacheDir, '/\\') . DIRECTORY_SEPARATOR . $cacheFile;
+        $cacheDir  = (empty($this->_cacheDir) ? '.' : $this->_cacheDir);
+        $cacheFile = rtrim($cacheDir, '/\\') . DIRECTORY_SEPARATOR . $cacheFile;
 
         return $cacheFile;
     }
