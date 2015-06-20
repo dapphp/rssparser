@@ -2,5 +2,5 @@
 
 namespace Dapphp\RssParser;
 
-class FeedException extends Exception {}
+class FeedException extends \Exception {}
 

@@ -46,6 +46,8 @@ namespace Dapphp\RssParser;
 
 use Dapphp\RssParser\FeedException;
 
+require_once 'FeedException.php';
+
 /**
  * Dapphp\RssParser
  *
