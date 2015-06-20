@@ -182,7 +182,32 @@ class RssParser
         if ($this->_cacheLifetime > 0 && file_exists($cacheFile) && time() - filemtime($cacheFile) < $this->_cacheLifetime) {
             $this->_feedItems = unserialize(file_get_contents($cacheFile));
         } else {
-            $content          = $this->_fetchFeed($url);
+            $fetch  = true;
+            $redirs = 0;
+
+            do {
+                $content = $this->_fetchFeed($url);
+                list($headers, $content) = explode("\r\n\r\n", $content, 2);
+                $headers = $this->_parseHeaders($headers);
+                $status  = $headers['status_code'];
+
+                if ($status == '200') {
+                    $fetch = false;
+                } else if ($status == '301' || $status == '302') {
+                    if (!isset($headers['headers']['location'])) {
+                        throw new \Exception("Bad redirect.  Server sent a {$status} status but response is missing 'Location' header");
+                    }
+                    $url = $headers['headers']['location'];
+                    $redirs++;
+                } else {
+                    throw new \Exception("HTTP request failed.  {$status} {$headers['message']}", $status);
+                }
+
+                if ($redirs >= 25) {
+                    throw new \Exception('Redirection limit exceeded. The site is redirecting the request in a way that will never complete.');
+                }
+            } while ($fetch);
+
             $this->_feedItems = $this->_parseFeed($content);
 
             if ($this->_cacheLifetime > 0) {
@@ -354,6 +379,34 @@ class RssParser
         }
 
         return $entries;
+    }
+
+    private function _parseHeaders($headers)
+    {
+        $lines    = explode("\r\n", $headers);
+        $response = array_shift($lines);
+        $header   = array();
+
+        if (!preg_match('/^HTTP\/\d\.\d (\d{3}) (.*)$/i', $response, $match)) {
+            throw new \Exception('Bad response.  The server sent a malformed HTTP response. "{$response}"');
+        }
+
+        $code    = $match[1];
+        $message = $match[2];
+
+        foreach($lines as $line) {
+            if (strpos($line, ':') === false) {
+                throw new \Exception('Bad response.  Missing : separator. "{$response}"');
+            }
+            list($name, $value) = explode(':', $line, 2);
+                $header[strtolower($name)] = trim($value);
+            }
+
+        return array(
+            'status_code' => $code,
+            'message'     => $message,
+            'headers'     => $header,
+        );
     }
 
     /**
