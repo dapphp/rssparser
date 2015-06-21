@@ -381,6 +381,12 @@ class RssParser
         return $entries;
     }
 
+    /**
+     * Parse http response headers into associative array
+     *
+     * @param string $headers String of http headers to parse
+     * @return array Parsed array of headers
+     */
     private function _parseHeaders($headers)
     {
         $lines    = explode("\r\n", $headers);
@@ -413,15 +419,18 @@ class RssParser
      * State machine for parsing <item> tag contents
      *
      * @param string $content The inner content of the <item> tag to parse
+     * @param bool $recursed True if the function is being called recursively
+     * @param int $offset Starting offset of $content when parsing recursively
      * @throws \Exception If item content does not contain valid RSS code
      * @return array Array of parsed tags
      */
-    private function _readTags($content)
+    private function _readTags($content, $recursed = false, &$offset = null)
     {
         $tags  = array();
         $state = 'open_tag_lt';
+        $start = ($offset != null ? $offset : 0);
 
-        for ($i = 0; $i < strlen($content); ++$i) {
+        for ($i = $start; $i < strlen($content); ++$i) {
             $char = $content[$i];
 
             switch ($state) {
@@ -434,7 +443,7 @@ class RssParser
                     $tagContent   = null;
                     $closeTagName = '';
                     $attributes   = array();
-                    $state   = 'tag_name';
+                    $state        = 'tag_name';
                     break;
 
                 case 'tag_name':
@@ -475,7 +484,9 @@ class RssParser
 
                 case 'tag_content':
                     while ($char != '<') {
-                        $tagContent .= $char;
+                        if (!is_array($tagContent))
+                            $tagContent .= $char;
+
                         if ($i + 1 > strlen($content)) {
                             throw new FeedException("Unexpected \$end while reading {$tagName} contents");
                         }
@@ -580,7 +591,11 @@ class RssParser
 
                 case 'close_tag_lt':
                     if ($char != '/') {
-                        throw new FeedException("Expected '/' to close $tagName; got $char");
+                        // nested tags
+                        $o = $i - 1;
+                        $tagContent = $this->_readTags($content, true, $o);
+                        $state = 'tag_content';
+                        $i = $o + 1;
                     } else {
                         $state = 'close_tag_name';
                     }
@@ -600,9 +615,30 @@ class RssParser
             }
 
             if ($state == 'close_tag_end') {
-                $tags[$tagName]['content']    = trim($tagContent);
-                $tags[$tagName]['attributes'] = $attributes;
+                $tag = array(
+                    'content'    => (is_array($tagContent) ? $tagContent : trim($tagContent)),
+                    'attributes' => $attributes,
+                );
+
+                if (isset($tags[$tagName])) {
+                    if (isset($tags[$tagName]['content'])) {
+                        $tmp = $tags[$tagName];
+                        unset($tags[$tagName]);
+                        $tags[$tagName] = array($tmp);
+                    }
+
+                    $tags[$tagName][] = $tag;
+                } else {
+                    $tags[$tagName] = $tag;
+                }
+
                 $state = 'open_tag_lt';
+
+                if ($recursed == true) {
+                    // break out of nested parsing and return to caller
+                    $offset = $i;
+                    return $tags;
+                }
             }
         }
 
