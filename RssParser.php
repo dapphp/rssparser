@@ -39,7 +39,7 @@
  * @copyright 2015 Drew Phillips
  * @author Drew Phillips <drew@drew-phillips.com>
  * @package Dapphp\RssParser
- * @version 1.0.3 (Apr 2, 2018)
+ * @version 1.1.0 (Apr 2, 2018)
  */
 
 namespace Dapphp\RssParser;
