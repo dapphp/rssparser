@@ -39,14 +39,12 @@
  * @copyright 2015 Drew Phillips
  * @author Drew Phillips <drew@drew-phillips.com>
  * @package Dapphp\RssParser
- * @version 1.0.2 (June 20, 2015)
+ * @version 1.0.3 (Apr 2, 2018)
  */
 
 namespace Dapphp\RssParser;
 
 use Dapphp\RssParser\FeedException;
-
-require_once 'FeedException.php';
 
 /**
  * Dapphp\RssParser
@@ -309,7 +307,7 @@ class RssParser
         $content   = '';
 
         if ($urlParts['scheme'] == 'https') {
-            $host = 'tls://' . $urlParts['host'];
+            $host = 'ssl://' . $urlParts['host'];
             $port = (isset($urlParts['port'])) ? $urlParts['port'] : 443;
         } else {
             $host = $urlParts['host'];
