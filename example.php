@@ -15,7 +15,7 @@
   <body role="document">
 <?php
 
-include_once 'RssParser.php';
+require_once 'vendor/autoload.php';
 
 // the URL of the RSS feed to read
 $feedUrl  = 'http://www.npr.org/rss/rss.php?id=1001'; // NPR News & Headlines
